@@ -17,4 +17,4 @@ class Settings:
 		self.fleet_direction = 1
 
 		self.game_level = 1
-		self.ship_limit = 3
+		self.ship_limit = 0
