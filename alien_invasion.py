@@ -30,7 +30,12 @@ class AlienInvasion:
 		self.bullets = pygame.sprite.Group()
 		self.stats = GameStats(self)
 		self.aliens = pygame.sprite.Group()
+
 		self.play_button = Button(self, "Play")
+		self.play_active = True
+		self.easy_button = Button(self, "Easy")
+		self.normal_button = Button(self, "Normal")
+		self.hard_button = Button(self, "Hard")
 
 		self._create_fleet()
 
@@ -106,7 +111,19 @@ class AlienInvasion:
 		self.ship.blitme()
 		self.aliens.draw(self.screen)
 		if not self.game_active:
-			self.play_button.draw_button()
+			if self.play_active == True:
+				self.play_button.draw_button()
+			else:
+				self.easy_button.rect.center = (400, 540)
+				self.hard_button.rect.center = (1400, 540)
+				self.easy_button.msg_image_rect.center = self.easy_button.rect.center
+				self.hard_button.msg_image_rect.center = self.hard_button.rect.center
+
+				#self.easy_button.msg_image_rect.center = self.easy_button.rect.bottomleft
+				#self.hard_button.msg_image_rect.center = self.hard_button.rect.bottomright
+				self.easy_button.draw_button()
+				self.normal_button.draw_button()
+				self.hard_button.draw_button()
 		pygame.display.flip()
 
 	def	_fire_bullet(self):
@@ -146,7 +163,7 @@ class AlienInvasion:
 			if self.settings.game_level == 1:
 				self.settings.alien_speed += 2.0
 			else:
-				self.settings.alien_speed += 0.5
+				self.settings.alien_speed += 1.0
 			self._create_fleet()
 
 	def	_update_aliens(self):
@@ -188,19 +205,61 @@ class AlienInvasion:
 				break
 
 	def	_check_play_button(self, mouse_pos):
-		button_clicked = self.play_button.rect.collidepoint(mouse_pos)
-		if button_clicked and not self.game_active:
-			self._start_game()
+		if self.play_active == False:
+			diff_selected1 = self.easy_button.rect.collidepoint(mouse_pos)
+			diff_selected2 = self.normal_button.rect.collidepoint(mouse_pos)
+			diff_selected3 = self.hard_button.rect.collidepoint(mouse_pos)
+			if diff_selected1 and not self.game_active:
+				self._start_game('easy')
+			elif diff_selected2 and not self.game_active:
+				self._start_game('normal')
+			elif diff_selected3 and not self.game_active:
+				self._start_game('hard')
+		else:
+			button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+			if button_clicked and not self.game_active:
+				self.play_active = False
 
-	def	_start_game(self):
-		pygame.mouse.set_visible(False)
-		self.stats.reset_stats()
-		self.game_active = True
-		self.game_over = False
-		self.bullets.empty()
-		self.aliens.empty()
-		self._create_fleet()
-		self.ship.center_ship()
+
+	def	_start_game(self, lvl='easy'):
+		if lvl == 'easy':
+			pygame.mouse.set_visible(False)
+			self.stats.reset_stats()
+			self.game_active = True
+			self.game_over = False
+			self.bullets.empty()
+			self.aliens.empty()
+			self._create_fleet()
+			self.ship.center_ship()
+		elif lvl == 'normal':
+			self.settings.alien_speed += 1.0
+			pygame.mouse.set_visible(False)
+			self.stats.reset_stats()
+			self.game_active = True
+			self.game_over = False
+			self.bullets.empty()
+			self.aliens.empty()
+			self._create_fleet()
+			self.ship.center_ship()
+		elif lvl == 'hard':
+			self.settings.alien_speed += 2.0
+			pygame.mouse.set_visible(False)
+			self.stats.reset_stats()
+			self.game_active = True
+			self.game_over = False
+			self.bullets.empty()
+			self.aliens.empty()
+			self._create_fleet()
+			self.ship.center_ship()
+		else:
+			pygame.mouse.set_visible(False)
+			self.stats.reset_stats()
+			self.game_active = True
+			self.game_over = False
+			self.bullets.empty()
+			self.aliens.empty()
+			self._create_fleet()
+			self.ship.center_ship()
 
 
 if __name__ == '__main__':
