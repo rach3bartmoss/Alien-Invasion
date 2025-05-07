@@ -8,6 +8,9 @@ from alien import Alien
 from background import Background
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
+
+"""PAGE 299 CRASH COURSE BUTTON FOR MORE UPGRADES"""
 
 class AlienInvasion:
 	"""Overall class to manage game assets and controls"""
@@ -18,6 +21,7 @@ class AlienInvasion:
 		self.settings = Settings()
 		self.game_active = False
 		self.game_over = False
+		self.retries = 0
 
 		self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 		self.screen_rect = self.screen.get_rect()
@@ -29,6 +33,7 @@ class AlienInvasion:
 		self.ship = Ship(self)
 		self.bullets = pygame.sprite.Group()
 		self.stats = GameStats(self)
+		self.sb = Scoreboard(self)
 		self.aliens = pygame.sprite.Group()
 
 		self.play_button = Button(self, "Play")
@@ -110,6 +115,7 @@ class AlienInvasion:
 			bullet.draw_bullet()
 		self.ship.blitme()
 		self.aliens.draw(self.screen)
+		self.sb.show_score()
 		if not self.game_active:
 			if self.play_active == True:
 				self.play_button.draw_button()
@@ -157,13 +163,22 @@ class AlienInvasion:
 		"""If either dokill argument is True, the colliding Sprites will be removed from their respective Group."""
 		collisions = pygame.sprite.groupcollide(self.bullets,
 			self.aliens, True, True)
+		if collisions:
+			for aliens in collisions.values():
+				self.stats.score += self.settings.alien_points * len(aliens)
+			self.sb.prep_score()
 		if not self.aliens:
 			self.bullets.empty()
 			self.settings.game_level += 1
+			self.settings.ship_speed += 0.5
 			if self.settings.game_level == 1:
-				self.settings.alien_speed += 2.0
-			else:
 				self.settings.alien_speed += 1.0
+			elif self.settings.game_level == 5:
+				self.settings.alien_points = 100
+			print(self.settings.ship_speed)
+			print(self.settings.game_level)
+			print(self.settings.alien_points)
+
 			self._create_fleet()
 
 	def	_update_aliens(self):
@@ -194,6 +209,7 @@ class AlienInvasion:
 			sleep(0.5)
 		elif self.stats.ships_left == 0:
 			print("ENTERED HERE2")
+			self.retries += 1
 			pygame.mouse.set_visible(True)
 			self.game_active = False
 			self.game_over = True
@@ -231,8 +247,11 @@ class AlienInvasion:
 			self.aliens.empty()
 			self._create_fleet()
 			self.ship.center_ship()
-		elif lvl == 'normal':
-			self.settings.alien_speed += 1.0
+		elif lvl == 'normal' :
+			if self.retries == 0:
+				self.settings.alien_speed += 1.0
+			else:
+				self.settings.alien_speed = 3.0
 			pygame.mouse.set_visible(False)
 			self.stats.reset_stats()
 			self.game_active = True
@@ -242,7 +261,10 @@ class AlienInvasion:
 			self._create_fleet()
 			self.ship.center_ship()
 		elif lvl == 'hard':
-			self.settings.alien_speed += 2.0
+			if self.retries == 0:
+				self.settings.alien_speed += 2.0
+			else:
+				self.settings.alien_speed = 4.0
 			pygame.mouse.set_visible(False)
 			self.stats.reset_stats()
 			self.game_active = True
